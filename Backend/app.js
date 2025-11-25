@@ -5,6 +5,7 @@ require('dotenv').config();
 
 //routes
 const authRoutes = require('./routes/authRoutes');
+const drawRoomRoutes = require('./routes/drawRoomRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get('/', (req, res)=>{
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/drawroom', drawRoomRoutes);
 
 const PORT = process.env.PORT || 5000;
 
