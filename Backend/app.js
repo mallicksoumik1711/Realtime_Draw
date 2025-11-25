@@ -19,10 +19,10 @@ app.get('/', (req, res)=>{
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/drawroom', drawRoomRoutes);
+app.use('/api/drawroom', drawRoomRoutes);   
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () =>{
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`); //locally
 });
