@@ -8,22 +8,24 @@ import { createRoom } from "../../api/room";
 
 function Dashboard() {
   const [openRoomModal, setOpenRoomModal] = useState(false);
+
   const handleCreateRoom = async (roomData) => {
     try {
       const token = localStorage.getItem("token");
 
-      const userId = JSON.parse(localStorage.getItem("user"))._id;
+      const data = await createRoom(roomData, token);
 
-      const payload = {
-        ...roomData,
-        owner: userId,
-      };
+      console.log("API RESPONSE:", data);
 
-      const res = await createRoom(payload, token);
-      console.log("Room created:", res);
+      if (!data || !data.room || !data.room._id) {
+        console.log("Room ID missing:", data?.room?._id);
+        return null;
+      }
+
+      return data.room._id;
     } catch (error) {
-      console.error(error);
-      alert("Failed to create room");
+      console.error("Error creating room:", error);
+      return null;
     }
   };
 

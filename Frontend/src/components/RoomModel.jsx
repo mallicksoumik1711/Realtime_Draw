@@ -6,18 +6,23 @@ export default function RoomModel({ isOpen, onClose, onCreate }) {
   const [accessControl, setAccessControl] = useState("public");
   const [sessionPurpose, setSessionPurpose] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim()) return alert("Room name is required");
 
-    onCreate({
+    const roomId = await onCreate({
       name,
       accessControl,
       sessionPurpose,
     });
 
+    if (!roomId) return; // prevent redirect to undefined
+
     setName("");
     setSessionPurpose("");
     onClose();
+
+    // Redirect to drawing room
+    window.location.href = `/draw/${roomId}`;
   };
 
   if (!isOpen) return null;
