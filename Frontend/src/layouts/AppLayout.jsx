@@ -43,12 +43,15 @@ function AppLayout({ children }) {
         </div>
       )}
 
-      {/* Dark bg when sidebar opened */}
+      {/* Dark backdrop when mobile sidebar open */}
       {mobileSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        ></div>
+          onClick={() => {
+            setMobileSidebarOpen(false);
+            document.dispatchEvent(new CustomEvent("close-mobile-sidebar")); // ADD THIS LINE
+          }}
+        />
       )}
 
       {/* Sidebar */}

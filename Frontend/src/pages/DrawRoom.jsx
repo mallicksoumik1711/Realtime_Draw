@@ -1,15 +1,30 @@
-
-// src/pages/DrawRoom.jsx
 import { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+// import { useParams } from "react-router-dom";
 import { Pencil, Eraser, Undo, Redo } from "lucide-react";
 
 export default function DrawRoom() {
-  const { roomId } = useParams();
+  // const { roomId } = useParams();
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const [tool, setTool] = useState("pencil");
   const [drawing, setDrawing] = useState(false);
+
+  // deleted code
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // Sync with AppLayout's sidebar state
+  useEffect(() => {
+    const handleOpen = () => setMobileSidebarOpen(true);
+    const handleClose = () => setMobileSidebarOpen(false);
+
+    document.addEventListener("open-mobile-sidebar", handleOpen);
+    document.addEventListener("close-mobile-sidebar", handleClose);
+
+    return () => {
+      document.removeEventListener("open-mobile-sidebar", handleOpen);
+      document.removeEventListener("close-mobile-sidebar", handleClose);
+    };
+  }, []);
+  // delete code
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -65,18 +80,33 @@ export default function DrawRoom() {
         }}
       />
 
-      {/* Mobile Hamburger - Only visible when sidebar is closed */}
+      {/* Mobile Hamburger — Hidden when sidebar is open */}
       <button
-        onClick={() => document.dispatchEvent(new CustomEvent("open-mobile-sidebar"))}
-        className="fixed top-4 left-4 z-50 p-2 bg-white/80 backdrop-blur rounded-lg shadow-md hover:bg-white lg:hidden"
+        onClick={() =>
+          document.dispatchEvent(new CustomEvent("open-mobile-sidebar"))
+        }
+        className={`
+    fixed top-5 left-4 z-50 p-2 lg:hidden
+    ${mobileSidebarOpen ? "opacity-0 pointer-events-none" : "opacity-100"}
+  `}
       >
-        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        <svg
+          className="w-6 h-6 text-gray-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
         </svg>
       </button>
 
       {/* Compact Drawing Toolbar - Mobile & Desktop */}
-      <div className="fixed top-0 left-0 lg:left-72 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-md z-40 flex items-center justify-center gap-4 py-3">
+      <div className="fixed top-0 left-0 lg:left-72 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-md z-40 flex items-center justify-end gap-4 py-4 pr-3">
         <button
           onClick={() => setTool("pencil")}
           className={`p-3 rounded-lg transition-all ${
@@ -103,10 +133,6 @@ export default function DrawRoom() {
         <button className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200">
           <Redo className="w-5 h-5" />
         </button>
-
-        <span className="absolute right-4 text-xs font-medium text-gray-500 hidden sm:block">
-          Room: {roomId?.slice(-6)}
-        </span>
       </div>
 
       {/* Canvas */}

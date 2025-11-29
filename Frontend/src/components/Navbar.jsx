@@ -2,7 +2,7 @@ import { Bell, Menu, Search } from "lucide-react";
 
 function Navbar({ setMobileSidebarOpen }) {
     return (
-        <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200/70 px-4 sm:px-6 py-4">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200/70 px-4 sm:px-6 py-4 shadow-md">
             <div className="flex items-center justify-between gap-4">
                 {/* Mobile Hamburger */}
                 <button
