@@ -23,7 +23,7 @@ function AppLayout({ children }) {
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: Clock, label: "Recent", path: "/recent" },
     { icon: Users, label: "Sessions", path: "/sessions" },
-    { icon: Brush, label: "My Art", path: "/myart" },
+    { icon: Brush, label: "Art", path: "/myart" },
     { icon: Users, label: "Users", path: "/users" },
   ];
 

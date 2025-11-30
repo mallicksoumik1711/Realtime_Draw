@@ -7,6 +7,7 @@ export default function DrawRoom() {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const [tool, setTool] = useState("pencil");
+
   const [drawing, setDrawing] = useState(false);
 
   // deleted code
@@ -106,32 +107,35 @@ export default function DrawRoom() {
       </button>
 
       {/* Compact Drawing Toolbar - Mobile & Desktop */}
-      <div className="fixed top-0 left-0 lg:left-72 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-md z-40 flex items-center justify-end gap-4 py-4 pr-3">
+      <div className="fixed top-0 left-0 lg:left-20 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-md z-40 flex items-center justify-end gap-4 py-5 pr-3">
         <button
           onClick={() => setTool("pencil")}
-          className={`p-3 rounded-lg transition-all ${
+          className={`p-2.5 rounded-md transition-all flex items-center justify-center ${
             tool === "pencil"
               ? "bg-teal-600 text-white"
-              : "bg-gray-100 hover:bg-gray-200"
+              : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          <Pencil className="w-5 h-5" />
+          <Pencil className="w-4 h-4" />
         </button>
+
         <button
           onClick={() => setTool("eraser")}
-          className={`p-3 rounded-lg transition-all ${
+          className={`p-2.5 rounded-md transition-all flex items-center justify-center ${
             tool === "eraser"
               ? "bg-teal-600 text-white"
-              : "bg-gray-100 hover:bg-gray-200"
+              : "text-gray-600 hover:bg-gray-100"
           }`}
         >
-          <Eraser className="w-5 h-5" />
+          <Eraser className="w-4 h-4" />
         </button>
-        <button className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200">
-          <Undo className="w-5 h-5" />
+
+        <button className="p-2.5 rounded-md text-gray-600 hover:bg-gray-100 transition-all flex items-center justify-center">
+          <Undo className="w-4 h-4" />
         </button>
-        <button className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200">
-          <Redo className="w-5 h-5" />
+
+        <button className="p-2.5 rounded-md text-gray-600 hover:bg-gray-100 transition-all flex items-center justify-center">
+          <Redo className="w-4 h-4" />
         </button>
       </div>
 
