@@ -74,7 +74,7 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
               }}
               className={`relative w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all group ${
                 isActive
-                  ? "bg-teal-800 text-white shadow-lg"
+                  ? "bg-gradient-to-br from-teal-600 to-teal-800 text-white shadow-lg"
                   : "hover:bg-gray-100 text-gray-700"
               }`}
             >
@@ -108,7 +108,7 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
         className="p-4 border-t border-gray-200/70 cursor-pointer hover:bg-gray-100/60 transition group relative"
       >
         <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed ? "lg:justify-center" : ""}`}>
-          <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md flex-shrink-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-teal-600 to-teal-800 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md flex-shrink-0">
             AR
           </div>
 
