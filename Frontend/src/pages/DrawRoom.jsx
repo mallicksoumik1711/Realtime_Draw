@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-// import { useParams } from "react-router-dom";
-import { Pencil, Eraser, Undo, Redo } from "lucide-react";
+import { Pencil, Eraser, Undo, Redo, Palette } from "lucide-react";
 
 // -------------------------------------------------------------------------------------
 export const ToolButton = ({ icon: Icon, active, onClick, tooltip }) => {
@@ -113,7 +112,7 @@ export default function DrawRoom() {
 
     ctxRef.current.globalCompositeOperation =
       tool === "eraser" ? "destination-out" : "source-over";
-    ctxRef.current.strokeStyle = tool === "eraser" ? "#FFFFFF" : "#000000";
+    ctxRef.current.strokeStyle = tool === "eraser" ? "#FFFFFF" : color;
     ctxRef.current.lineTo(x, y);
     ctxRef.current.stroke();
   };
@@ -121,6 +120,9 @@ export default function DrawRoom() {
   const stopDraw = () => setDrawing(false);
 
   const [brushSize, setBrushSize] = useState(5);
+
+  const [color, setColor] = useState("#000000");
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   return (
     <>
@@ -159,12 +161,12 @@ export default function DrawRoom() {
       </button>
 
       {/* Toolbar in header */}
-      <div className="fixed top-0 left-0 lg:left-20 right-0 z-40 flex flex-col items-center">
+      <div className="fixed top-2 left-0 lg:left-20 right-5 z-40 flex flex-col items-end">
         {/* Main Toolbar */}
         <div
           className="
       flex items-center gap-1 bg-white/95 backdrop-blur-xl 
-      border-b border-gray-200 shadow-md px-4 py-3 rounded-b-xl
+      border-b border-gray-200 shadow-md px-4 py-3 rounded-xl
     "
         >
           <ToolButton icon={Undo} tooltip="Undo" onClick={() => {}} />
@@ -177,9 +179,10 @@ export default function DrawRoom() {
             icon={Pencil}
             tooltip="Pencil"
             active={tool === "pencil"}
-            onClick={() =>
-              setTool((prev) => (prev === "pencil" ? null : "pencil"))
-            }
+            onClick={() => {
+              setShowColorPicker(false);
+              setTool((prev) => (prev === "pencil" ? null : "pencil"));
+            }}
           />
 
           {/* ERASER */}
@@ -187,9 +190,20 @@ export default function DrawRoom() {
             icon={Eraser}
             tooltip="Eraser"
             active={tool === "eraser"}
-            onClick={() =>
-              setTool((prev) => (prev === "eraser" ? null : "eraser"))
-            }
+            onClick={() => {
+              setShowColorPicker(false);
+              setTool((prev) => (prev === "eraser" ? null : "eraser"));
+            }}
+          />
+
+          <ToolButton
+            icon={Palette}
+            tooltip="Color"
+            active={tool === "color"}
+            onClick={() => {
+              setTool((prev) => (prev === "color" ? null : "color"));
+              setShowColorPicker(!showColorPicker);
+            }}
           />
         </div>
 
@@ -209,6 +223,47 @@ export default function DrawRoom() {
                 className="rounded-full bg-black"
                 style={{ width: brushSize / 2, height: brushSize / 2 }}
               ></div>
+            </div>
+          </SubToolbar>
+        )}
+
+        {tool==="color" && showColorPicker && (
+          <SubToolbar>
+            <div className="grid grid-cols-6 gap-3 p-2">
+              {[
+                "#FF5252",
+                "#FF4081",
+                "#E040FB",
+                "#7C4DFF",
+                "#536DFE",
+                "#448AFF",
+                "#40C4FF",
+                "#18FFFF",
+                "#64FFDA",
+                "#69F0AE",
+                "#B2FF59",
+                "#EEFF41",
+                "#FFFF00",
+                "#FFD740",
+                "#FFAB40",
+                "#FF6E40",
+                "#795548",
+                "#9E9E9E",
+                "#607D8B",
+                "#000000",
+                "#FFFFFF",
+              ].map((c) => (
+                <button
+                  key={c}
+                  onClick={() => {
+                    setColor(c);
+                    setTool("pencil");
+                    setShowColorPicker(false);
+                  }}
+                  className="w-7 h-7 rounded-full shadow-lg active:scale-90 transition"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
             </div>
           </SubToolbar>
         )}
