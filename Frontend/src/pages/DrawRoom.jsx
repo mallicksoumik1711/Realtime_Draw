@@ -2,6 +2,54 @@ import { useState, useRef, useEffect } from "react";
 // import { useParams } from "react-router-dom";
 import { Pencil, Eraser, Undo, Redo } from "lucide-react";
 
+// -------------------------------------------------------------------------------------
+export const ToolButton = ({ icon: Icon, active, onClick, tooltip }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative flex items-center justify-center p-2.5 rounded-lg
+        transition-all hover:bg-gray-100
+        ${active ? "text-teal-600" : "text-gray-700"}
+      `}
+    >
+      <Icon className="w-4 h-4" />
+
+      {/* Tooltip */}
+      <span
+        className="
+        absolute bottom-full mb-2 px-2 py-1
+        bg-gray-800 text-white text-xs rounded opacity-0
+        group-hover:opacity-100 transition-all pointer-events-none
+        whitespace-nowrap
+      "
+      >
+        {tooltip}
+      </span>
+
+      {/* Underline indicator */}
+      {active && (
+        <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-teal-600 rounded-full"></span>
+      )}
+    </button>
+  );
+};
+
+export const SubToolbar = ({ children }) => {
+  return (
+    <div
+      className="
+      flex items-center gap-4 bg-white/90 backdrop-blur-xl
+      border border-gray-200 shadow-lg px-4 py-2
+      rounded-b-xl animate-in slide-in-from-top duration-200
+    "
+    >
+      {children}
+    </div>
+  );
+};
+// -------------------------------------------------------------------------------------
+
 export default function DrawRoom() {
   // const { roomId } = useParams();
   const canvasRef = useRef(null);
@@ -49,6 +97,7 @@ export default function DrawRoom() {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
     const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+    ctxRef.current.lineWidth = brushSize; // ← ADD THIS
     ctxRef.current.beginPath();
     ctxRef.current.moveTo(x, y);
     setDrawing(true);
@@ -60,6 +109,8 @@ export default function DrawRoom() {
     const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
     const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
 
+    ctxRef.current.lineWidth = brushSize; // ← ADD THIS
+
     ctxRef.current.globalCompositeOperation =
       tool === "eraser" ? "destination-out" : "source-over";
     ctxRef.current.strokeStyle = tool === "eraser" ? "#FFFFFF" : "#000000";
@@ -68,6 +119,8 @@ export default function DrawRoom() {
   };
 
   const stopDraw = () => setDrawing(false);
+
+  const [brushSize, setBrushSize] = useState(5);
 
   return (
     <>
@@ -80,7 +133,6 @@ export default function DrawRoom() {
           backgroundSize: "40px 40px",
         }}
       />
-
       {/* Mobile Hamburger — Hidden when sidebar is open */}
       <button
         onClick={() =>
@@ -106,37 +158,60 @@ export default function DrawRoom() {
         </svg>
       </button>
 
-      {/* Compact Drawing Toolbar - Mobile & Desktop */}
-      <div className="fixed top-0 left-0 lg:left-20 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-md z-40 flex items-center justify-end gap-4 py-5 pr-3">
-        <button
-          onClick={() => setTool("pencil")}
-          className={`p-2.5 rounded-md transition-all flex items-center justify-center ${
-            tool === "pencil"
-              ? "bg-teal-600 text-white"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
+      {/* Toolbar in header */}
+      <div className="fixed top-0 left-0 lg:left-20 right-0 z-40 flex flex-col items-center">
+        {/* Main Toolbar */}
+        <div
+          className="
+      flex items-center gap-1 bg-white/95 backdrop-blur-xl 
+      border-b border-gray-200 shadow-md px-4 py-3 rounded-b-xl
+    "
         >
-          <Pencil className="w-4 h-4" />
-        </button>
+          <ToolButton icon={Undo} tooltip="Undo" onClick={() => {}} />
+          <ToolButton icon={Redo} tooltip="Redo" onClick={() => {}} />
 
-        <button
-          onClick={() => setTool("eraser")}
-          className={`p-2.5 rounded-md transition-all flex items-center justify-center ${
-            tool === "eraser"
-              ? "bg-teal-600 text-white"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          <Eraser className="w-4 h-4" />
-        </button>
+          <div className="w-px h-5 bg-gray-300 mx-1" />
 
-        <button className="p-2.5 rounded-md text-gray-600 hover:bg-gray-100 transition-all flex items-center justify-center">
-          <Undo className="w-4 h-4" />
-        </button>
+          {/* PENCIL */}
+          <ToolButton
+            icon={Pencil}
+            tooltip="Pencil"
+            active={tool === "pencil"}
+            onClick={() =>
+              setTool((prev) => (prev === "pencil" ? null : "pencil"))
+            }
+          />
 
-        <button className="p-2.5 rounded-md text-gray-600 hover:bg-gray-100 transition-all flex items-center justify-center">
-          <Redo className="w-4 h-4" />
-        </button>
+          {/* ERASER */}
+          <ToolButton
+            icon={Eraser}
+            tooltip="Eraser"
+            active={tool === "eraser"}
+            onClick={() =>
+              setTool((prev) => (prev === "eraser" ? null : "eraser"))
+            }
+          />
+        </div>
+
+        {/* Sub-toolbar — appears only when tool is active */}
+        {!tool && (
+          <SubToolbar>
+            <div className="flex items-center gap-3 w-40">
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={brushSize}
+                onChange={(e) => setBrushSize(Number(e.target.value))}
+                className="w-full"
+              />
+              <div
+                className="rounded-full bg-black"
+                style={{ width: brushSize / 2, height: brushSize / 2 }}
+              ></div>
+            </div>
+          </SubToolbar>
+        )}
       </div>
 
       {/* Canvas */}
