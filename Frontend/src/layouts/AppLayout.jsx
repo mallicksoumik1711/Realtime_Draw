@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { Home, Clock, Users, Brush } from "lucide-react";
+import { Home, Clock, Users, BellRing } from "lucide-react";
 
 import { useLocation } from "react-router-dom";
 
@@ -23,7 +23,7 @@ function AppLayout({ children }) {
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: Clock, label: "Recent", path: "/recent" },
     { icon: Users, label: "Sessions", path: "/sessions" },
-    { icon: Brush, label: "Art", path: "/myart" },
+    { icon: BellRing, label: "Notification", path: "/notification" },
     { icon: Users, label: "Users", path: "/users" },
   ];
 
@@ -66,7 +66,7 @@ function AppLayout({ children }) {
         {!hideNavbar && <Navbar setMobileSidebarOpen={setMobileSidebarOpen} />}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-5 sm:p-6 bg-gray-50/30">
+        <main className="flex-1 overflow-y-auto px-2 py-6 sm:p-6 bg-gray-50/30">
           {children}
         </main>
       </div>

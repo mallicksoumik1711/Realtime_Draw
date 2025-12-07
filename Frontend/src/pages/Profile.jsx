@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"; //eslint-disable-line no-unused-vars
 import {
   LogOut,
-  Globe,
+  Mail,
   Clock,
   CheckCircle,
   Plus,
@@ -67,8 +67,8 @@ export default function FreelancerProfile() {
                 <h1 className="text-2xl font-bold text-gray-900">Jane Smith</h1>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
-                    <Globe className="w-4 h-4" />
-                    Singapore, Singapore
+                    <Mail className="w-4 h-4" />
+                    Jane@smith.com
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-sm">
@@ -129,9 +129,9 @@ export default function FreelancerProfile() {
                   />
                   <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-3 border-white rounded-full"></span>
                 </div>
-                <div>
+                <div className="text-right">
                   <h3 className="font-lg text-lg">Jane Smith</h3>
-                  <p className="text-sm text-gray-600">Singapore, Singapore</p>
+                  <p className="text-sm text-gray-600">Jane@smith.com</p>
                   <p className="text-xs text-green-600 mt-1">Available now</p>
                 </div>
               </div>

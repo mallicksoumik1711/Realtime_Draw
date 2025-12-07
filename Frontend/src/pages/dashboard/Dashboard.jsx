@@ -39,7 +39,7 @@ function Dashboard() {
       />
 
       {/* Welcome card */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-gray-200/50">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-white/80 backdrop-blur-xl rounded-3xl px-4 py-8 shadow-lg border border-gray-200/50">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Welcome back!</h1>
           <p className="text-gray-700 mt-1">

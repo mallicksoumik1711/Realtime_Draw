@@ -9,7 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoutes";
 
 import Dashboard from "./pages/dashboard/Dashboard";
 import Sessions from "./pages/dashboard/Sessions";
-import MyArt from "./pages/dashboard/MyArt";
+import Notification from "./pages/dashboard/Notification";
 import Recent from "./pages/dashboard/Recent";
 import Users from "./pages/dashboard/Users";
 
@@ -64,11 +64,11 @@ function App() {
           }
         />
         <Route
-          path="/myart"
+          path="/notification"
           element={
             <ProtectedRoute>
               <AppLayout>
-                <MyArt />
+                <Notification />
               </AppLayout>
             </ProtectedRoute>
           }

@@ -1,6 +1,9 @@
 import { Bell, Menu, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Navbar({ setMobileSidebarOpen }) {
+  const navigate = useNavigate();
+
   return (
     <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200/70 px-4 sm:px-6 py-4 shadow-md">
       <div className="flex items-center justify-between gap-4">
@@ -44,7 +47,7 @@ function Navbar({ setMobileSidebarOpen }) {
         </div>
 
         {/* Notifications */}
-        <button className="relative p-2.5 hover:bg-gray-100 rounded-xl transition">
+        <button className="relative p-2.5 hover:bg-gray-100 rounded-xl transition" onClick={()=>navigate("/notification")}>
           <Bell className="w-5 h-5 lg:w-6 lg:h-6 text-gray-700" />
           <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-teal-600 rounded-full border-2 border-white"></span>
         </button>
