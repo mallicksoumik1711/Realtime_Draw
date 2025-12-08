@@ -21,11 +21,12 @@ const userSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: "", 
+      default: "",
     },
-    isOnline: {
-      type: Boolean,
-      default: false, 
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "inactive",
     },
   },
   { timestamps: true }

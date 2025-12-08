@@ -1,88 +1,22 @@
-
 import { useState } from "react";
 import { MoreHorizontal } from "lucide-react";
-
-// Dummy users
-const dummyUsers = [
-  {
-    id: 1,
-    name: "Brooklyn Simmons",
-    email: "brooklyn@example.com",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Esther Howard",
-    email: "esther@example.com",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    status: "inactive",
-  },
-  {
-    id: 3,
-    name: "Leslie Alexander",
-    email: "leslie@example.com",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Wade Warren",
-    email: "wade@example.com",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Jenny Wilson",
-    email: "jenny@example.com",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    status: "inactive",
-  },
-  {
-    id: 6,
-    name: "Robert Fox",
-    email: "robert@example.com",
-    avatar: "https://i.pravatar.cc/150?img=6",
-    status: "active",
-  },
-  {
-    id: 7,
-    name: "Jacob Jones",
-    email: "jacob@example.com",
-    avatar: "https://i.pravatar.cc/150?img=7",
-    status: "inactive",
-  },
-  {
-    id: 8,
-    name: "Kristin Watson",
-    email: "kristin@example.com",
-    avatar: "https://i.pravatar.cc/150?img=8",
-    status: "active",
-  },
-  {
-    id: 9,
-    name: "Cody Fisher",
-    email: "cody@example.com",
-    avatar: "https://i.pravatar.cc/150?img=9",
-    status: "active",
-  },
-  {
-    id: 10,
-    name: "Savannah Nguyen",
-    email: "savannah@example.com",
-    avatar: "https://i.pravatar.cc/150?img=10",
-    status: "inactive",
-  },
-];
+import { useEffect } from "react";
+import { getAllUsers } from "../../api/user";
+import { useSelector } from "react-redux";
 
 export default function Users() {
+  const onlineUsers = useSelector((state) => state.onlineUsers);
+
   const [filter, setFilter] = useState("all");
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    getAllUsers()
+      .then((data) => setUsers(data))
+      .catch((err) => console.error("Error loading users:", err));
+  }, []);
 
   const filteredUsers =
-    filter === "active"
-      ? dummyUsers.filter((u) => u.status === "active")
-      : dummyUsers;
+    filter === "active" ? users.filter((u) => onlineUsers[u._id]) : users;
 
   return (
     <div className="min-h-screen bg-[url('https://svgshare.com/i/vHf.svg')] bg-repeat">
@@ -120,13 +54,13 @@ export default function Users() {
               <tbody className="divide-y divide-gray-200">
                 {filteredUsers.map((user, idx) => (
                   <tr
-                    key={user.id}
+                    key={user._id || idx}
                     className={idx % 2 === 0 ? "bg-white" : "bg-teal-50/50"}
                   >
                     <td className="px-6 py-4 flex items-center gap-4">
                       <img
-                        src={user.avatar}
-                        alt={user.name}
+                        src={user.avatar || "/default-avatar.png"}
+                        alt={user.name || "User"}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                       <span className="font-medium text-gray-900">
@@ -137,14 +71,15 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                          user.status === "active"
+                          onlineUsers[user._id]
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {user.status}
+                        {onlineUsers[user._id] ? "Active" : "Inactive"}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 text-right">
                       <MoreHorizontal className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer inline-block" />
                     </td>
@@ -158,7 +93,7 @@ export default function Users() {
           <div className="lg:hidden">
             {filteredUsers.map((user, idx) => (
               <div
-                key={user.id}
+                key={user._id || idx}
                 className={`px-1 py-4 border-b border-gray-200 ${
                   idx % 2 === 0 ? "bg-white" : "bg-teal-50/30"
                 }`}
@@ -166,14 +101,12 @@ export default function Users() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <img
-                      src={user.avatar}
-                      alt={user.name}
+                      src={user.avatar || "/default-avatar.png"}
+                      alt={user.name || "User"}
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-gray-900 truncate">
-                        {user.name}
-                      </p>
+                      <p className="text-gray-900 truncate">{user.name}</p>
                       <p className="text-sm text-gray-500 truncate">
                         {user.email}
                       </p>
@@ -184,9 +117,10 @@ export default function Users() {
                     {/* Status Dot (Mobile) */}
                     <div
                       className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                        user.status === "active" ? "bg-green-500" : "bg-red-500"
+                        onlineUsers[user._id] ? "bg-green-500" : "bg-red-500"
                       }`}
                     />
+
                     <MoreHorizontal className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   </div>
                 </div>

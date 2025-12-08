@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 
 import LandingPage from "./pages/LandingPage";
 import SignupPage from "./pages/SignUp";
@@ -17,7 +18,21 @@ import AppLayout from "./layouts/AppLayout";
 
 import DrawRoom from "./pages/DrawRoom";
 
+// socket
+import { connectUserSocket, disconnectUserSocket } from "./socket/userStatus";
+
 function App() {
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user")); // get logged-in user
+    if (user && user.id) {
+      connectUserSocket(user.id); // connect socket with userId
+    }
+
+    return () => {
+      disconnectUserSocket(); // disconnect when component unmounts
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
