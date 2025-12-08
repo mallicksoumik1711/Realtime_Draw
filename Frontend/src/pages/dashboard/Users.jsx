@@ -59,7 +59,7 @@ export default function Users() {
                   >
                     <td className="px-6 py-4 flex items-center gap-4">
                       <img
-                        src={user.avatar || "/default-avatar.png"}
+                        src={user.avatar || "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="}
                         alt={user.name || "User"}
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -101,7 +101,7 @@ export default function Users() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <img
-                      src={user.avatar || "/default-avatar.png"}
+                      src={user.avatar || "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="}
                       alt={user.name || "User"}
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />

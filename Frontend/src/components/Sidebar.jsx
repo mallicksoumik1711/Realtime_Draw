@@ -1,6 +1,8 @@
 import { Palette, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getLoggedInUserId } from "../utils/loggedInUser";
+import { getUserById } from "../api/user";
 
 function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
   const navigate = useNavigate();
@@ -8,6 +10,23 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
 
   // Desktop collapse state (only affects lg+ screens)
   const [collapsed, setCollapsed] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    const loadUser = async () => {
+      const id = getLoggedInUserId();
+      if (!id) return;
+
+      try {
+        const user = await getUserById(id);
+        setCurrentUser(user);
+      } catch (err) {
+        console.log("Failed to fetch logged in user:", err);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   return (
     <aside
@@ -35,7 +54,7 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
         <div className="flex items-center gap-2">
           {/* Collapse Toggle - only visible on desktop */}
           <button
-            onClick={() => setCollapsed(prev => !prev)} // Fixed syntax
+            onClick={() => setCollapsed((prev) => !prev)} // Fixed syntax
             className="hidden lg:flex p-2 hover:bg-gray-100 rounded-lg text-gray-600"
           >
             {collapsed ? (
@@ -83,9 +102,7 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
               {/* Label */}
               <span
                 className={`font-medium transition-all duration-300 ${
-                  collapsed
-                    ? "lg:opacity-0 lg:w-0 lg:overflow-hidden"
-                    : ""
+                  collapsed ? "lg:opacity-0 lg:w-0 lg:overflow-hidden" : ""
                 }`}
               >
                 {item.label}
@@ -107,9 +124,19 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
         onClick={() => navigate("/profile")}
         className="p-4 border-t border-gray-200/70 cursor-pointer hover:bg-gray-100/60 transition group relative"
       >
-        <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed ? "lg:justify-center" : ""}`}>
+        <div
+          className={`flex items-center gap-3 transition-all duration-300 ${
+            collapsed ? "lg:justify-center" : ""
+          }`}
+        >
           <div className="w-10 h-10 bg-gradient-to-br from-teal-600 to-teal-800 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-md flex-shrink-0">
-            AR
+            {currentUser
+              ? currentUser.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+              : "?"}
           </div>
 
           <div
@@ -117,15 +144,17 @@ function Sidebar({ mobileSidebarOpen, setMobileSidebarOpen, menuItems }) {
               collapsed ? "lg:opacity-0 lg:w-0 lg:overflow-hidden" : ""
             }`}
           >
-            <p className="text-sm font-semibold text-gray-900">Alex Rivera</p>
-            <p className="text-xs text-gray-500">alex@drawly.com</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {currentUser?.name || "Loading..."}
+            </p>
+            <p className="text-xs text-gray-500">{currentUser?.email || ""}</p>
           </div>
         </div>
 
         {/* Tooltip for profile when collapsed */}
         {collapsed && (
           <span className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-lg">
-            Alex Rivera
+            {currentUser?.name || ""}
           </span>
         )}
       </div>

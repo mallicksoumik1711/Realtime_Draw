@@ -17,11 +17,31 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+import { getLoggedInUserId } from "../utils/loggedInUser";
+import { getUserById } from "../api/user";
 
 export default function FreelancerProfile() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    const loadUser = async () => {
+      const id = getLoggedInUserId();
+      if (!id) return;
+
+      try {
+        const user = await getUserById(id);
+        setCurrentUser(user);
+      } catch (err) {
+        console.log("Failed to fetch logged in user:", err);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -64,11 +84,13 @@ export default function FreelancerProfile() {
                 <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-3 border-white rounded-full"></span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Jane Smith</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {currentUser?.name || "Loading..."}
+                </h1>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <Mail className="w-4 h-4" />
-                    Jane@smith.com
+                    {currentUser?.email || "Loading..."}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1 text-sm">
@@ -130,8 +152,8 @@ export default function FreelancerProfile() {
                   <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-3 border-white rounded-full"></span>
                 </div>
                 <div className="text-right">
-                  <h3 className="font-lg text-lg">Jane Smith</h3>
-                  <p className="text-sm text-gray-600">Jane@smith.com</p>
+                  <h3 className="font-lg text-lg">{currentUser?.name || "Loading..."}</h3>
+                  <p className="text-sm text-gray-600">{currentUser?.email || "Loading..."}</p>
                   <p className="text-xs text-green-600 mt-1">Available now</p>
                 </div>
               </div>
