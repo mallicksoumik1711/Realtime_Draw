@@ -12,6 +12,8 @@ module.exports = (io) => {
     try {
       await User.findByIdAndUpdate(userId, { status: "active" }).exec();
       onlineUsers.add(String(userId));
+      // join a room named by userId for targeted emits
+      socket.join(String(userId));
       io.emit("user_online", String(userId));
       io.emit("online_users", Array.from(onlineUsers));
       console.log("User active:", userId);

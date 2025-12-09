@@ -2,11 +2,16 @@ import { useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { useEffect } from "react";
 import { getAllUsers } from "../../api/user";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { sendInviteAPI } from "../../api/invite";
+import { showToast } from "../../store/toastSlice";
 
 export default function Users() {
   const onlineUsers = useSelector((state) => state.onlineUsers);
-
+  const dispatch = useDispatch();
+  const [openMenu, setOpenMenu] = useState(null);
+  const [invitedUsers, setInvitedUsers] = useState([]);
   const [filter, setFilter] = useState("all");
   const [users, setUsers] = useState([]);
   useEffect(() => {
@@ -15,8 +20,29 @@ export default function Users() {
       .catch((err) => console.error("Error loading users:", err));
   }, []);
 
+  const location = useLocation();
+  const roomId = new URLSearchParams(location.search).get("roomId");
+
+  console.log("INVITING FOR ROOM:", roomId);
+
   const filteredUsers =
-    filter === "active" ? users.filter((u) => onlineUsers[u._id]) : users;
+    filter === "active"
+      ? users.filter((u) => onlineUsers[u._id])
+      : filter === "invited"
+      ? users.filter((u) => invitedUsers.includes(u._id))
+      : users;
+
+  const sendInvite = async (toUserId, roomId) => {
+    try {
+      const data = await sendInviteAPI(toUserId, roomId);
+      console.log("Invite result:", data);
+      setInvitedUsers((prev) => [...new Set([...prev, toUserId])]); // avoid duplicates
+      dispatch(showToast({ message: "Invite sent", type: "success" }));
+    } catch (err) {
+      console.error("Error sending invite:", err);
+      dispatch(showToast({ message: "Failed to send invite", type: "error" }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[url('https://svgshare.com/i/vHf.svg')] bg-repeat">
@@ -36,6 +62,7 @@ export default function Users() {
               >
                 <option value="all">All Users</option>
                 <option value="active">Active Users</option>
+                <option value="invited">Invited Users</option>
               </select>
             </div>
           </div>
@@ -59,7 +86,10 @@ export default function Users() {
                   >
                     <td className="px-6 py-4 flex items-center gap-4">
                       <img
-                        src={user.avatar || "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="}
+                        src={
+                          user.avatar ||
+                          "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="
+                        }
                         alt={user.name || "User"}
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -81,7 +111,52 @@ export default function Users() {
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <MoreHorizontal className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer inline-block" />
+                      {/* <MoreHorizontal className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer inline-block" /> */}
+                      <div className=" relative inline-block">
+                        <MoreHorizontal
+                          className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer inline-block"
+                          onClick={() =>
+                            setOpenMenu(openMenu === user._id ? null : user._id)
+                          }
+                        />
+
+                        {/* Popup Menu */}
+                        {openMenu === user._id && (
+                          <div className="absolute right-8 top-0 w-32 bg-white shadow-lg rounded-lg z-50">
+                            {invitedUsers.includes(user._id) ? (
+                              <button
+                                onClick={() => {
+                                  // Remove user from invited list
+                                  setInvitedUsers((prev) =>
+                                    prev.filter((id) => id !== user._id)
+                                  );
+                                  setOpenMenu(null);
+
+                                  // Optional: call cancelInvite API
+                                  // cancelInviteAPI(user._id, roomId);
+                                }}
+                                className="w-full text-left text-sm px-2 py-3 rounded hover:bg-red-100 text-red-600"
+                              >
+                                Cancel Invite
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  if (!roomId) {
+                                    dispatch(showToast({ message: "Missing roomId", type: "warning" }));
+                                    return;
+                                  }
+                                  sendInvite(user._id, roomId);
+                                  setOpenMenu(null);
+                                }}
+                                className="w-full text-left text-sm px-2 py-3 rounded hover:bg-green-100 text-green-600"
+                              >
+                                Send Invite
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -101,7 +176,10 @@ export default function Users() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <img
-                      src={user.avatar || "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="}
+                      src={
+                        user.avatar ||
+                        "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="
+                      }
                       alt={user.name || "User"}
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
@@ -121,7 +199,49 @@ export default function Users() {
                       }`}
                     />
 
-                    <MoreHorizontal className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    {/* <MoreHorizontal className="w-4 h-4 text-gray-400 flex-shrink-0" /> */}
+                    <div className="relative">
+                      <MoreHorizontal
+                        className="w-4 h-4 text-gray-400 flex-shrink-0"
+                        onClick={() =>
+                          setOpenMenu(openMenu === user._id ? null : user._id)
+                        }
+                      />
+
+                      {openMenu === user._id && (
+                        <div className="absolute right-6 top-0 w-32 bg-white shadow-lg rounded-lg z-50">
+                          {invitedUsers.includes(user._id) ? (
+                            <button
+                              onClick={() => {
+                                setInvitedUsers((prev) =>
+                                  prev.filter((id) => id !== user._id)
+                                );
+                                setOpenMenu(null);
+
+                                // Optional: cancelInviteAPI(user._id, roomId);
+                              }}
+                              className="w-full text-left text-sm px-2 py-3 rounded hover:bg-red-100 text-red-600"
+                            >
+                              Cancel Invite
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (!roomId) {
+                                  dispatch(showToast({ message: "Missing roomId", type: "warning" }));
+                                  return;
+                                }
+                                sendInvite(user._id, roomId);
+                                setOpenMenu(null);
+                              }}
+                              className="w-full text-left text-sm px-2 py-3 rounded hover:bg-green-100 text-green-600"
+                            >
+                              Send Invite
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

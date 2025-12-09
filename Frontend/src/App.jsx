@@ -17,6 +17,7 @@ import Users from "./pages/dashboard/Users";
 import AppLayout from "./layouts/AppLayout";
 
 import DrawRoom from "./pages/DrawRoom";
+import Toast from "./components/Toast";
 
 // socket
 import { connectUserSocket, disconnectUserSocket } from "./socket/userStatus";
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Toast />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SignInPage />} />

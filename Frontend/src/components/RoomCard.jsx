@@ -1,4 +1,4 @@
-// src/components/RoomCard.jsx
+
 import { useNavigate } from "react-router-dom";
 
 export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
@@ -37,13 +37,18 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
             }}
             className="p-2 rounded-xl hover:bg-gray-100 transition-colors flex-shrink-0"
           >
-            <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4 text-gray-500"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
             </svg>
           </button>
         </div>
 
-        <p className="text-xs sm:text-sm text-gray-500 mt-2">
+        <div className="flex items-center justify-between">
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
           {new Date(room.createdAt).toLocaleString("en-IN", {
             day: "numeric",
             month: "short",
@@ -53,9 +58,24 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
             hour12: true,
           })}
         </p>
+
+        {/* ------------------------------------INVITE FRIENDS---------------------------------------------------------------------- */}
+        {room.accessControl === "public" && (
+          <button
+            // onClick={() => navigate("/users")}
+            onClick={() => navigate(`/users?roomId=${room._id}`)}
+            className="text-xs text-teal-600 font-medium mt-2 hover:text-teal-700 cursor-pointer"
+          >
+            Invite friends
+          </button>
+        )}
+
+        {/* ------------------------------------INVITE FRIENDS---------------------------------------------------------------------- */}
+        </div>
+
       </div>
 
-      {/* Dropdown — EXACT same as yours */}
+      {/* Dropdown*/}
       {isMenuOpen && (
         <div
           className="absolute top-2 right-2 w-40 bg-white rounded-2xl shadow-2xl border border-gray-200 ring-4 ring-white z-[9999]"
@@ -68,7 +88,12 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
               onMenuToggle(null);
             }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -82,11 +107,17 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
           <button
             className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 rounded-b-2xl"
             onClick={() => {
-              if (confirm("Delete this drawing?")) console.log("Deleted", room._id);
+              if (confirm("Delete this drawing?"))
+                console.log("Deleted", room._id);
               onMenuToggle(null);
             }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

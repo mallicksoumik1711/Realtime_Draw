@@ -22,7 +22,8 @@ export default function RoomModel({ isOpen, onClose, onCreate }) {
     onClose();
 
     // Redirect to drawing room
-    window.location.href = `/draw/${roomId}`;
+    // window.location.href = `/draw/${roomId}`;
+    window.location.href = "/recent";
   };
 
   if (!isOpen) return null;

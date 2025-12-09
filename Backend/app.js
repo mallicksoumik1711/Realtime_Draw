@@ -7,11 +7,13 @@ require("dotenv").config();
 const http = require("http");
 const { Server } = require("socket.io");
 const userStatusHandler = require("./socket/userStatus");
+const { setIO } = require("./socket/io");
 
 //routes
 const authRoutes = require("./routes/authRoutes");
 const drawRoomRoutes = require("./routes/drawRoomRoutes");
 const userRoutes = require("./routes/userRoutes");
+const inviteRoutes = require("./routes/inviteRoutes");
 
 const app = express();
 
@@ -26,6 +28,8 @@ const io = new Server(server, {
     origin: "*",
   },
 });
+// expose io for controllers
+setIO(io);
 userStatusHandler(io);
 
 app.get("/", (req, res) => {
@@ -35,6 +39,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/drawroom", drawRoomRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/invite", inviteRoutes);
 
 const PORT = process.env.PORT || 5000;
 

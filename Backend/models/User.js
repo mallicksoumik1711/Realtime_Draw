@@ -28,6 +28,21 @@ const userSchema = new mongoose.Schema(
       enum: ["active", "inactive"],
       default: "inactive",
     },
+    notifications: [
+      {
+        from: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        room: { type: mongoose.Schema.Types.ObjectId, ref: "Room" },
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "declined"],
+          default: "pending",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
