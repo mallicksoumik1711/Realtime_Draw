@@ -12,12 +12,18 @@ const notificationsSlice = createSlice({
     //   state.push(action.payload);
     // },
     addNotification: (state, action) => {
-      state.unshift({ ...action.payload, _id: String(action.payload._id) });
+      const incoming = { ...action.payload, _id: String(action.payload._id) };
+      const idx = state.findIndex((n) => n._id === incoming._id);
+      if (idx !== -1) {
+        state[idx] = { ...state[idx], ...incoming };
+      } else {
+        state.unshift(incoming);
+      }
     },
 
     updateNotificationStatus: (state, action) => {
       const { id, status } = action.payload;
-      const notif = state.find((n) => n._id === id);
+      const notif = state.find((n) => n._id === String(id));
       if (notif) notif.status = status;
     },
     removeNotification: (state, action) =>

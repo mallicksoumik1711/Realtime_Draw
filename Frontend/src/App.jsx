@@ -29,9 +29,8 @@ function App() {
       connectUserSocket(user.id); // connect socket with userId
     }
 
-    return () => {
-      disconnectUserSocket(); // disconnect when component unmounts
-    };
+    // Do not auto-disconnect on unmount in dev; keep persistent connection
+    return () => {};
   }, []);
 
   return (

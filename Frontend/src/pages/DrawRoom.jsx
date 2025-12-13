@@ -2,9 +2,30 @@ import { useState, useRef, useEffect } from "react";
 import { Pencil, Eraser, Undo, Redo, Palette } from "lucide-react";
 import { ToolButton } from "../components/ToolButton";
 import { SubToolbar } from "../components/SubToolBar";
+import { useParams } from "react-router-dom";
+import { getSocket, connectUserSocket, joinRoom, leaveRoom } from "../socket/userStatus";
 
 export default function DrawRoom() {
-  // const { roomId } = useParams();
+  const { roomId } = useParams();
+  useEffect(() => {
+    if (!roomId) return;
+    let sock = getSocket();
+    if (!sock) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user?.id) {
+        connectUserSocket(String(user.id));
+        sock = getSocket();
+      }
+    }
+    if (!sock) return;
+
+    joinRoom(roomId);
+
+    return () => {
+      leaveRoom(roomId);
+    };
+  }, [roomId]);
+
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const [tool, setTool] = useState("pencil");
@@ -46,6 +67,30 @@ export default function DrawRoom() {
     return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
+  useEffect(() => {
+    const s = getSocket();
+    if (!s) return;
+    const onDraw = ({ x, y, tool, color, brushSize }) => {
+      const ctx = ctxRef.current;
+      if (!ctx) return;
+
+      ctx.beginPath(); // ✅ ADD THIS
+      ctx.moveTo(x, y);
+
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = "round";
+      ctx.globalCompositeOperation =
+        tool === "eraser" ? "destination-out" : "source-over";
+      ctx.strokeStyle = tool === "eraser" ? "#FFFFFF" : color;
+
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    };
+    s.on("draw", onDraw);
+
+    return () => s.off("draw", onDraw);
+  }, []);
+
   const startDraw = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
@@ -67,6 +112,18 @@ export default function DrawRoom() {
     ctxRef.current.globalCompositeOperation =
       tool === "eraser" ? "destination-out" : "source-over";
     ctxRef.current.strokeStyle = tool === "eraser" ? "#FFFFFF" : color;
+    const s = getSocket();
+    if (s && s.connected) s.emit("draw", {
+      roomId,
+      data: {
+        x,
+        y,
+        tool,
+        color,
+        brushSize,
+      },
+    });
+
     ctxRef.current.lineTo(x, y);
     ctxRef.current.stroke();
   };
@@ -181,7 +238,7 @@ export default function DrawRoom() {
           </SubToolbar>
         )}
 
-        {tool==="color" && showColorPicker && (
+        {tool === "color" && showColorPicker && (
           <SubToolbar>
             <div className="grid grid-cols-6 gap-3 p-2">
               {[

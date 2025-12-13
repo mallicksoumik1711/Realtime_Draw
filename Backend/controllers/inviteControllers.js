@@ -43,41 +43,91 @@ const sendInvite = async (req, res) => {
   }
 };
 
+// const acceptInvite = async (req, res) => {
+//   try {
+//     const { notificationId } = req.body;
+//     const userId = req.user.id;
+
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ msg: "User not found" });
+
+//     const notif = user.notifications.id(notificationId);
+//     if (!notif) return res.status(404).json({ msg: "Notification not found" });
+//     if (notif.status !== "pending") {
+//       return res.status(400).json({ msg: "Invite is not pending" });
+//     }
+
+//     notif.status = "accepted";
+//     await user.save();
+
+//     const io = getIO();
+//     if (io) {
+//       // notify recipient (current user) UI update
+//       io.to(String(userId)).emit("update_notification_status", {
+//         notificationId: String(notif._id),
+//         status: "accepted",
+//       });
+//       // also notify inviter their invite was accepted, include name
+//       const byUser = await User.findById(userId).select("name");
+//       io.to(String(notif.from)).emit("invite_response", {
+//         notificationId: String(notif._id),
+//         status: "accepted",
+//         by: String(userId),
+//         byName: byUser?.name || "",
+//       });
+//     }
+
+//     res.json({ msg: "Invite accepted" });
+//   } catch (err) {
+//     res.status(500).json({ msg: "Server error", error: err.message });
+//   }
+// };
+
 const acceptInvite = async (req, res) => {
   try {
     const { notificationId } = req.body;
     const userId = req.user.id;
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ msg: "User not found" });
-
     const notif = user.notifications.id(notificationId);
-    if (!notif) return res.status(404).json({ msg: "Notification not found" });
-    if (notif.status !== "pending") {
-      return res.status(400).json({ msg: "Invite is not pending" });
+    if (!notif || notif.status !== "pending") {
+      return res.status(400).json({ msg: "Invalid invite" });
     }
 
     notif.status = "accepted";
     await user.save();
 
+    // ✅ ADD RECEIVER TO ROOM
+    await Room.updateOne(
+      { _id: notif.room },
+      { $addToSet: { participants: userId } }
+    );
+
     const io = getIO();
     if (io) {
-      // notify recipient (current user) UI update
+      // update receiver notification
       io.to(String(userId)).emit("update_notification_status", {
         notificationId: String(notif._id),
         status: "accepted",
       });
-      // also notify inviter their invite was accepted, include name
+
+      // notify sender
       const byUser = await User.findById(userId).select("name");
       io.to(String(notif.from)).emit("invite_response", {
         notificationId: String(notif._id),
         status: "accepted",
         by: String(userId),
         byName: byUser?.name || "",
+        roomId: String(notif.room), // 🔥 IMPORTANT
+      });
+
+      // 🔥 TELL RECEIVER TO JOIN ROOM
+      io.to(String(userId)).emit("join_room_after_accept", {
+        roomId: String(notif.room),
       });
     }
 
-    res.json({ msg: "Invite accepted" });
+    res.json({ msg: "Invite accepted", roomId: notif.room });
   } catch (err) {
     res.status(500).json({ msg: "Server error", error: err.message });
   }
@@ -153,7 +203,7 @@ const deleteNotification = async (req, res) => {
     const user = await User.findById(userId).select("_id notifications._id");
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    const exists = user.notifications.some(n => String(n._id) === String(id));
+    const exists = user.notifications.some((n) => String(n._id) === String(id));
     if (!exists) return res.status(404).json({ msg: "Notification not found" });
 
     await User.updateOne(
@@ -179,18 +229,24 @@ const cancelInvite = async (req, res) => {
     const { notificationId, recipientId } = req.body;
 
     // Ensure recipient exists and that the notification belongs to sender and is pending
-    const recipient = await User.findById(recipientId).select("_id notifications");
+    const recipient = await User.findById(recipientId).select(
+      "_id notifications"
+    );
     if (!recipient) return res.status(404).json({ msg: "Recipient not found" });
 
     const target = recipient.notifications.find(
-      (n) => String(n._id) === String(notificationId) && String(n.from) === String(senderId) && n.status === "pending"
+      (n) =>
+        String(n._id) === String(notificationId) &&
+        String(n.from) === String(senderId) &&
+        n.status === "pending"
     );
-    if (!target) return res.status(404).json({ msg: "Pending invite not found" });
+    if (!target)
+      return res.status(404).json({ msg: "Pending invite not found" });
 
     // Mark as cancelled instead of removing; receiver can dismiss manually
     await User.updateOne(
-      { _id: recipientId, 'notifications._id': notificationId },
-      { $set: { 'notifications.$.status': 'cancelled' } }
+      { _id: recipientId, "notifications._id": notificationId },
+      { $set: { "notifications.$.status": "cancelled" } }
     );
 
     const io = getIO();
@@ -215,5 +271,11 @@ const cancelInvite = async (req, res) => {
   }
 };
 
-
-module.exports = { sendInvite, acceptInvite, rejectInvite, getMyNotifications, deleteNotification, cancelInvite };
+module.exports = {
+  sendInvite,
+  acceptInvite,
+  rejectInvite,
+  getMyNotifications,
+  deleteNotification,
+  cancelInvite,
+};

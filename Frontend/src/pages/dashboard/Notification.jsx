@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import {
   acceptInviteAPI,
@@ -13,6 +14,7 @@ import { showToast } from "../../store/toastSlice";
 export default function Notification() {
   const dispatch = useDispatch();
   const notifications = useSelector((state) => state.notifications);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // initial load of notifications from backend
@@ -32,6 +34,9 @@ export default function Notification() {
     await acceptInviteAPI(notif._id); // backend call
     dispatch(showToast({ message: "Invite accepted", type: "success" }));
     // UI will update via socket event
+    if (notif.room) {
+      navigate(`/draw/${notif.room}`);
+    }
   };
 
   const handleReject = async (notif) => {
