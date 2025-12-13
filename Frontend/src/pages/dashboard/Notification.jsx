@@ -1,8 +1,12 @@
-
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Check, X } from "lucide-react";
-import { acceptInviteAPI, rejectInviteAPI, getMyNotificationsAPI, deleteNotificationAPI } from "../../api/invite";
+import {
+  acceptInviteAPI,
+  rejectInviteAPI,
+  getMyNotificationsAPI,
+  deleteNotificationAPI,
+} from "../../api/invite";
 import { setNotifications } from "../../store/notificationsSlice";
 import { showToast } from "../../store/toastSlice";
 
@@ -56,14 +60,20 @@ export default function Notification() {
               </div>
 
               <div className="min-w-0">
-                <p className="text-gray-800 font-medium truncate">{n.fromName}</p>
+                <p className="text-gray-800 font-medium truncate">
+                  {n.fromName}
+                </p>
                 <p className="text-gray-600 text-sm truncate">
                   {n.status === "pending"
                     ? "sent you an invite"
                     : n.status === "accepted"
-                    ? (n.role === "inviter" ? "accepted your invite" : "You accepted the invite")
+                    ? n.role === "inviter"
+                      ? "accepted your invite"
+                      : "You accepted the invite"
                     : n.status === "declined"
-                    ? (n.role === "inviter" ? "declined your invite" : "You declined the invite")
+                    ? n.role === "inviter"
+                      ? "declined your invite"
+                      : "You declined the invite"
                     : n.status === "cancelled"
                     ? "Invite was cancelled"
                     : ""}
@@ -111,12 +121,28 @@ export default function Notification() {
                     aria-label="Dismiss notification"
                     className="p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition flex-shrink-0"
                     onClick={async () => {
+                      if (n.role === "inviter") {
+                        dispatch(
+                          setNotifications(
+                            notifications.filter((item) => item._id !== n._id)
+                          )
+                        );
+                        return;
+                      }
                       try {
                         await deleteNotificationAPI(n._id);
-                        dispatch(setNotifications(notifications.filter(item => item._id !== n._id)));
-                        dispatch(showToast({ message: "Notification removed", type: "info" }));
+                        dispatch(
+                          setNotifications(
+                            notifications.filter((item) => item._id !== n._id)
+                          )
+                        );
+                        dispatch(
+                          showToast({
+                            message: "Notification removed",
+                            type: "info",
+                          })
+                        );
                       } catch (err) {
-                        // no-op: optional toast can be added
                         console.log(err);
                       }
                     }}
@@ -132,4 +158,3 @@ export default function Notification() {
     </div>
   );
 }
-
