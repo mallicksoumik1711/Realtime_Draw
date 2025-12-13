@@ -23,3 +23,13 @@ export const getMyRooms = async (token) => {
 
   return res.data;
 };
+
+export const getRoomById = async (roomId, token) => {
+  const res = await axios.get(`http://localhost:5000/api/drawroom/${roomId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+};

@@ -3,10 +3,37 @@ import { Pencil, Eraser, Undo, Redo, Palette } from "lucide-react";
 import { ToolButton } from "../components/ToolButton";
 import { SubToolbar } from "../components/SubToolBar";
 import { useParams } from "react-router-dom";
-import { getSocket, connectUserSocket, joinRoom, leaveRoom } from "../socket/userStatus";
+import {
+  getSocket,
+  connectUserSocket,
+  joinRoom,
+  leaveRoom,
+} from "../socket/userStatus";
+import { getRoomById } from "../api/room";
 
 export default function DrawRoom() {
   const { roomId } = useParams();
+  const [roomName, setRoomName] = useState("Loading...");
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    const fetchRoom = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await getRoomById(roomId, token);
+
+        // backend returns { success, room }
+        setRoomName(res.room.name);
+      } catch (err) {
+        console.error("Failed to load room:", err);
+        setRoomName("Untitled Room");
+      }
+    };
+
+    fetchRoom();
+  }, [roomId]);
+
   useEffect(() => {
     if (!roomId) return;
     let sock = getSocket();
@@ -113,16 +140,17 @@ export default function DrawRoom() {
       tool === "eraser" ? "destination-out" : "source-over";
     ctxRef.current.strokeStyle = tool === "eraser" ? "#FFFFFF" : color;
     const s = getSocket();
-    if (s && s.connected) s.emit("draw", {
-      roomId,
-      data: {
-        x,
-        y,
-        tool,
-        color,
-        brushSize,
-      },
-    });
+    if (s && s.connected)
+      s.emit("draw", {
+        roomId,
+        data: {
+          x,
+          y,
+          tool,
+          color,
+          brushSize,
+        },
+      });
 
     ctxRef.current.lineTo(x, y);
     ctxRef.current.stroke();
@@ -173,6 +201,13 @@ export default function DrawRoom() {
 
       {/* Toolbar in header */}
       <div className="fixed top-2 left-0 lg:left-20 right-5 z-40 flex flex-col items-end">
+        <div className="mb-3 text-center">
+          <h1 className="text-sm sm:text-2xl font-bold text-gray-900">
+            {roomName}
+          </h1>
+          <p className="text-xs text-gray-500 mt-1">Room ID: {roomId}</p>
+        </div>
+
         {/* Main Toolbar */}
         <div
           className="
