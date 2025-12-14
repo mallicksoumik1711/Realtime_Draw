@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { Home, Clock, Users, BellRing } from "lucide-react";
+import { Home, Clock, MessageCircle, Users, BellRing } from "lucide-react";
 
 import { useLocation } from "react-router-dom";
 
@@ -22,7 +22,7 @@ function AppLayout({ children }) {
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: Clock, label: "Recent", path: "/recent" },
-    { icon: Users, label: "Sessions", path: "/sessions" },
+    { icon: MessageCircle, label: "Chats", path: "/chats" },
     { icon: BellRing, label: "Notification", path: "/notification" },
     { icon: Users, label: "Users", path: "/users" },
   ];

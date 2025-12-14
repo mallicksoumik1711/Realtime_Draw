@@ -9,7 +9,7 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoutes";
 
 import Dashboard from "./pages/dashboard/Dashboard";
-import Sessions from "./pages/dashboard/Sessions";
+import Chats from "./pages/dashboard/Chats";
 import Notification from "./pages/dashboard/Notification";
 import Recent from "./pages/dashboard/Recent";
 import Users from "./pages/dashboard/Users";
@@ -70,11 +70,11 @@ function App() {
           }
         />
         <Route
-          path="/sessions"
+          path="/chats"
           element={
             <ProtectedRoute>
               <AppLayout>
-                <Sessions />
+                <Chats />
               </AppLayout>
             </ProtectedRoute>
           }

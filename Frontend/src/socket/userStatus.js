@@ -29,7 +29,9 @@ export const connectUserSocket = (userId) => {
     console.log("socket connected", socket.id, "for user", uid);
     // Rejoin any rooms tracked locally (e.g., draw rooms)
     joinedRooms.forEach((roomId) => {
-      try { socket.emit("join_room", String(roomId)); } catch {}
+      try { socket.emit("join_room", String(roomId)); } catch {
+        console.log("Failed to re-join room on reconnect:", roomId);
+      }
     });
   });
   socket.on("connect_error", (err) => {
@@ -95,10 +97,14 @@ export const joinRoom = (roomId) => {
   if (!rid) return;
   joinedRooms.add(rid);
   if (s && s.connected) {
-    try { s.emit("join_room", rid); } catch {}
+    try { s.emit("join_room", rid); } catch {
+      console.log("Failed to join room:", rid);
+    }
   } else if (s) {
     s.once("connect", () => {
-      try { s.emit("join_room", rid); } catch {}
+      try { s.emit("join_room", rid); } catch {
+        console.log("Failed to join room on connect:", rid);
+      }
     });
   }
 };
@@ -109,6 +115,8 @@ export const leaveRoom = (roomId) => {
   if (!rid) return;
   joinedRooms.delete(rid);
   if (s && s.connected) {
-    try { s.emit("leave_room", rid); } catch {}
+    try { s.emit("leave_room", rid); } catch {
+      console.log("Failed to leave room:", rid);
+    }
   }
 };

@@ -29,10 +29,12 @@ function Navbar({ setMobileSidebarOpen }) {
             <input
               type="text"
               placeholder="Search drawings or users..."
-              className="w-full pl-12 pr-5 py-3 bg-gray-100/80 rounded-xl focus:outline-none 
-                 focus:bg-white focus:shadow-2xl 
-                 focus:scale-[1.025] text-sm font-medium placeholder-gray-500
-                 transition-all duration-300 ease-out"
+              onChange={(e) => {
+                window.dispatchEvent(
+                  new CustomEvent("chat-search", { detail: e.target.value })
+                );
+              }}
+              className="w-full pl-12 pr-5 py-3 bg-gray-100/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 transition"
             />
 
             {/* Floating shadow layer — appears only on focus */}
@@ -47,7 +49,10 @@ function Navbar({ setMobileSidebarOpen }) {
         </div>
 
         {/* Notifications */}
-        <button className="relative p-2.5 hover:bg-gray-100 rounded-xl transition" onClick={()=>navigate("/notification")}>
+        <button
+          className="relative p-2.5 hover:bg-gray-100 rounded-xl transition"
+          onClick={() => navigate("/notification")}
+        >
           <Bell className="w-5 h-5 lg:w-6 lg:h-6 text-gray-700" />
           <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-teal-600 rounded-full border-2 border-white"></span>
         </button>
