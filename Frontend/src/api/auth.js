@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",   // later replace with your Vercel backend URL
+  baseURL: "http://localhost:5000/api",   // vercel backend url TODO
 });
 
 // -------------------- AUTH APIs --------------------

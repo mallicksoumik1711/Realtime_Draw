@@ -66,5 +66,71 @@ module.exports = (io) => {
       // Broadcast the draw action to everyone else in the room
       socket.to(String(roomId)).emit("draw", data);
     });
+
+    // --- Chat realtime events with persistence ---
+    const Conversation = require("../models/Conversation");
+    const Message = require("../models/Message");
+
+    socket.on("chat:conversation:join", ({ conversationId }) => {
+      if (!conversationId) return;
+      socket.join(String(conversationId));
+      console.log(`Chat: ${socket.id} joined conversation ${conversationId}`);
+    });
+
+    socket.on("chat:conversation:leave", ({ conversationId }) => {
+      if (!conversationId) return;
+      socket.leave(String(conversationId));
+      console.log(`Chat: ${socket.id} left conversation ${conversationId}`);
+    });
+
+    socket.on(
+      "chat:message:send",
+      async ({ conversationId, text, attachments = [], tempId }, ack) => {
+        try {
+          if (!conversationId || !text) {
+            if (typeof ack === "function") ack(null);
+            return;
+          }
+
+          // Ensure conversation exists and current user is a participant
+          const convo = await Conversation.findById(conversationId).exec();
+          if (!convo || !convo.participants.map(String).includes(String(userId))) {
+            if (typeof ack === "function") ack(null);
+            return;
+          }
+
+          // Persist message
+          const saved = await Message.create({
+            conversationId,
+            sender: userId,
+            receiver:
+              convo.participants.map(String).find((id) => id !== String(userId)),
+            text,
+            attachments,
+          });
+
+          // Update conversation lastMessage
+          await Conversation.findByIdAndUpdate(conversationId, {
+            lastMessage: saved._id,
+          }).exec();
+
+          const payload = {
+            _id: String(saved._id),
+            conversationId: String(conversationId),
+            senderId: String(saved.sender),
+            text: saved.text,
+            attachments: saved.attachments || [],
+            createdAt: saved.createdAt,
+          };
+
+          // Broadcast to conversation room (per-conversation room)
+          socket.to(String(conversationId)).emit("chat:message:new", payload);
+          if (typeof ack === "function") ack(payload);
+        } catch (err) {
+          console.error("chat:message:send failed", err);
+          if (typeof ack === "function") ack(null);
+        }
+      }
+    );
   });
 };

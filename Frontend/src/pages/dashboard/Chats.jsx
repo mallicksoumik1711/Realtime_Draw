@@ -1,20 +1,62 @@
-import { useState, useEffect } from "react";
-import { MoreVertical, Send, Users, ArrowLeft } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { MoreVertical, Send, ArrowLeft, Trash2 } from "lucide-react";
 import { getAllUsers } from "../../api/user";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  initChatSocket,
+  joinConversation,
+  leaveConversation,
+  sendMessage as sendChatMessage,
+} from "../../socket/chat";
+import {
+  setActiveConversation,
+  addOptimisticMessage,
+  replaceOptimisticMessage,
+} from "../../store/messagesSlice";
+import { getLoggedInUserId } from "../../utils/loggedInUser";
+import axios from "axios";
+import { setMessages, clearConversation, markConversationRead } from "../../store/messagesSlice";
 
 function Chats() {
+  const dispatch = useDispatch();
   const [selectedChat, setSelectedChat] = useState(null);
+  const [inputText, setInputText] = useState("");
+  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const onlineUsers = useSelector((state) => state.onlineUsers);
+  const messagesByConv = useSelector((state) => state.messages.byConversation);
+  const [userConversationMap, setUserConversationMap] = useState({}); // { userId: conversationId }
 
   useEffect(() => {
     getAllUsers().then((data) => {
       setUsers(data);
       setFilteredUsers(data);
     });
+  }, []);
+
+  // Load existing conversations to build user->conversation map
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    if (!token) return;
+    axios
+      .get(`${base}/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const map = {};
+        const myId = getLoggedInUserId();
+        res.data.forEach((c) => {
+          if (c.isGroup) return;
+          const other = (c.participants || []).map((p) => String(p._id || p)).find((id) => id !== String(myId));
+          if (other) map[other] = String(c._id);
+        });
+        setUserConversationMap(map);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -35,42 +77,109 @@ function Chats() {
     return () => window.removeEventListener("chat-search", handler);
   }, [users]);
 
+  // Init chat socket once
+  useEffect(() => {
+    const userId = getLoggedInUserId();
+    const token = localStorage.getItem("token");
+    if (userId && token) {
+      initChatSocket(userId, token);
+    }
+  }, []);
+
+  // Join/leave conversation when selection changes
+  useEffect(() => {
+    if (!selectedChat) return;
+    dispatch(setActiveConversation(selectedChat));
+    // Load history for this 1:1 conversation if Conversation model exists
+    // Assume a conversation endpoint to ensure a conversation between two users
+    const token = localStorage.getItem("token");
+    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    // Find or create conversation for the pair
+    const myId = getLoggedInUserId();
+    axios
+      .post(`${base}/conversations/resolve`, { fromUserId: myId, toUserId: selectedChat }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then((res) => {
+        const conversationId = res.data.conversationId || res.data._id;
+        setActiveConversationId(conversationId);
+        // Join per-conversation room on socket
+        joinConversation(conversationId);
+        return axios.get(`${base}/messages/${conversationId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((msgRes) => {
+          dispatch(setMessages({
+            conversationId,
+            messages: msgRes.data.map((m) => ({
+              _id: String(m._id),
+              conversationId,
+              senderId: String(m.sender),
+              text: m.text,
+              attachments: m.attachments || [],
+              createdAt: m.createdAt,
+              read: !!m.read,
+            })),
+          }));
+          // Mark as read on open
+          axios.patch(`${base}/messages/read/${conversationId}`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).catch(()=>{});
+          dispatch(markConversationRead(conversationId));
+        });
+      })
+      .catch(() => {})
+    ;
+    return () => {
+      if (activeConversationId) leaveConversation(activeConversationId);
+      setActiveConversationId(null);
+    };
+  }, [selectedChat, dispatch]);
+
   const selectedChatData = users.find((user) => user._id === selectedChat);
 
-  //   const chatList = [
-  //     {
-  //       id: 1,
-  //       name: "Richard Ray",
-  //       avatar: "RR",
-  //       online: true,
-  //       lastMessage: "Hey, are we still on for the meeting tomorrow?",
-  //       time: "07:35 PM",
-  //       unread: 0,
-  //     },
-  //     {
-  //       id: 2,
-  //       name: "Sarah Beth",
-  //       avatar: "SB",
-  //       online: true,
-  //       lastMessage: "Video",
-  //       time: "05:56 PM",
-  //       unread: 1,
-  //       hasMedia: true,
-  //     },
-  //     {
-  //       id: 3,
-  //       name: "Epic Game",
-  //       avatar: null,
-  //       group: true,
-  //       lastMessage: "John Paul: @Robert Just finished the first lev...",
-  //       time: "4:30 PM",
-  //       unread: 24,
-  //     },
-  //   ];
+  const messagesFromStore = useSelector(
+    (state) => state.messages.byConversation[activeConversationId]
+  );
+  const messages = messagesFromStore || [];
 
-  const messages = [
-  
-  ];
+  // Auto-scroll to bottom when messages update
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages.length, selectedChat]);
+
+  const myUserId = useMemo(() => getLoggedInUserId(), []);
+
+  const canSend = useMemo(() => inputText.trim().length > 0 && !!selectedChat, [inputText, selectedChat]);
+
+  const handleSend = () => {
+    if (!canSend) return;
+    const tempId = `temp_${Date.now()}`;
+    dispatch(addOptimisticMessage({
+      conversationId: activeConversationId,
+      text: inputText,
+      tempId,
+      senderId: myUserId,
+    }));
+    sendChatMessage(
+      { conversationId: activeConversationId, text: inputText, tempId },
+      (serverMessage) => {
+        if (serverMessage && serverMessage._id) {
+          dispatch(
+            replaceOptimisticMessage({
+              conversationId: activeConversationId,
+              tempId,
+              realMessage: serverMessage,
+            })
+          );
+        }
+      }
+    );
+    setInputText("");
+  };
 
   //   const selectedChatData = chatList.find((chat) => chat.id === selectedChat);
 
@@ -125,6 +234,17 @@ function Chats() {
                         onlineUsers[user._id] ? "bg-green-500" : "bg-red-500"
                       }`}
                     />
+                    {/* UNREAD BADGE */}
+                    {(() => {
+                      const convId = userConversationMap[user._id];
+                      const list = convId ? (messagesByConv[convId] || []) : [];
+                      const unread = list.filter((m) => !m.read && m.senderId !== getLoggedInUserId()).length;
+                      return unread > 0 ? (
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                          {unread}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
 
                   {/* Name */}
@@ -189,37 +309,78 @@ function Chats() {
                 </p>
               </div>
 
-              <MoreVertical className="w-6 h-6 text-gray-600 cursor-pointer" />
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="p-2 rounded-md hover:bg-gray-100"
+                  aria-label="Chat menu"
+                >
+                  <MoreVertical className="w-5 h-5 text-gray-700" />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-red-600"
+                      onClick={async () => {
+                        if (!activeConversationId) return;
+                        try {
+                          const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                          const token = localStorage.getItem("token");
+                          await axios.delete(`${base}/messages/conversation/${activeConversationId}`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          dispatch(clearConversation(activeConversationId));
+                          setMenuOpen(false);
+                        } catch (e) {
+                          console.error("Delete chat failed", e);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete chat
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`flex ${m.sent ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`
-                      px-6 py-2 rounded-xl max-w-xs md:max-w-md shadow-md
-                      ${
-                        m.sent
-                          ? "bg-teal-700 text-white"
-                          : "bg-gray-200 text-gray-800"
-                      }
-                    `}
-                  >
-                    <p className="text-sm md:text-base">{m.text}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        m.sent ? "text-teal-200" : "text-gray-500"
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+              {messages.length === 0 ? (
+                <p className="text-center text-gray-500">No messages yet</p>
+              ) : (
+                messages.map((m) => {
+                  const isMine = m.senderId === myUserId;
+                  return (
+                    <div
+                      key={m._id}
+                      className={`flex ${
+                        isMine ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {m.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                      <div
+                        className={`px-6 py-2 rounded-xl max-w-xs md:max-w-md shadow-md ${
+                          isMine
+                            ? "bg-teal-700 text-white"
+                            : "bg-gray-200 text-gray-800"
+                        }`}
+                      >
+                        <p className="text-sm md:text-base">{m.text}</p>
+                        <p
+                          className={`text-xs mt-1 ${
+                            isMine ? "text-teal-200" : "text-gray-500"
+                          }`}
+                        >
+                          {new Date(m.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          {m.optimistic ? " • sending..." : ""}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             {/* Input Bar - ONLY SEND ICON */}
@@ -229,8 +390,17 @@ function Chats() {
                   type="text"
                   placeholder="Type a message..."
                   className="flex-1 px-5 py-3 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-600 transition"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSend();
+                  }}
                 />
-                <button className="p-3 bg-teal-700 text-white rounded-full shadow hover:bg-teal-800 transition">
+                <button
+                  className="p-3 bg-teal-700 text-white rounded-full shadow hover:bg-teal-800 transition disabled:opacity-50"
+                  onClick={handleSend}
+                  disabled={!canSend}
+                >
                   <Send className="w-4 h-4" />
                 </button>
               </div>

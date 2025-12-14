@@ -43,46 +43,6 @@ const sendInvite = async (req, res) => {
   }
 };
 
-// const acceptInvite = async (req, res) => {
-//   try {
-//     const { notificationId } = req.body;
-//     const userId = req.user.id;
-
-//     const user = await User.findById(userId);
-//     if (!user) return res.status(404).json({ msg: "User not found" });
-
-//     const notif = user.notifications.id(notificationId);
-//     if (!notif) return res.status(404).json({ msg: "Notification not found" });
-//     if (notif.status !== "pending") {
-//       return res.status(400).json({ msg: "Invite is not pending" });
-//     }
-
-//     notif.status = "accepted";
-//     await user.save();
-
-//     const io = getIO();
-//     if (io) {
-//       // notify recipient (current user) UI update
-//       io.to(String(userId)).emit("update_notification_status", {
-//         notificationId: String(notif._id),
-//         status: "accepted",
-//       });
-//       // also notify inviter their invite was accepted, include name
-//       const byUser = await User.findById(userId).select("name");
-//       io.to(String(notif.from)).emit("invite_response", {
-//         notificationId: String(notif._id),
-//         status: "accepted",
-//         by: String(userId),
-//         byName: byUser?.name || "",
-//       });
-//     }
-
-//     res.json({ msg: "Invite accepted" });
-//   } catch (err) {
-//     res.status(500).json({ msg: "Server error", error: err.message });
-//   }
-// };
-
 const acceptInvite = async (req, res) => {
   try {
     const { notificationId } = req.body;
@@ -97,7 +57,6 @@ const acceptInvite = async (req, res) => {
     notif.status = "accepted";
     await user.save();
 
-    // ✅ ADD RECEIVER TO ROOM
     await Room.updateOne(
       { _id: notif.room },
       { $addToSet: { participants: userId } }
@@ -118,10 +77,9 @@ const acceptInvite = async (req, res) => {
         status: "accepted",
         by: String(userId),
         byName: byUser?.name || "",
-        roomId: String(notif.room), // 🔥 IMPORTANT
+        roomId: String(notif.room),
       });
 
-      // 🔥 TELL RECEIVER TO JOIN ROOM
       io.to(String(userId)).emit("join_room_after_accept", {
         roomId: String(notif.room),
       });

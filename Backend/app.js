@@ -14,6 +14,8 @@ const authRoutes = require("./routes/authRoutes");
 const drawRoomRoutes = require("./routes/drawRoomRoutes");
 const userRoutes = require("./routes/userRoutes");
 const inviteRoutes = require("./routes/inviteRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const conversationRoutes = require("./routes/conversationRoutes");
 
 const app = express();
 
@@ -40,6 +42,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/drawroom", drawRoomRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/invite", inviteRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/conversations", conversationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

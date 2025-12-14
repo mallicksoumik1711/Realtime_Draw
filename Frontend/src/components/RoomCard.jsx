@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 
 export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
@@ -48,31 +47,27 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
         </div>
 
         <div className="flex items-center justify-between">
-            <p className="text-xs sm:text-sm text-gray-500 mt-2">
-          {new Date(room.createdAt).toLocaleString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          })}
-        </p>
+          <p className="text-xs sm:text-sm text-gray-500 mt-2">
+            {new Date(room.createdAt).toLocaleString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </p>
 
-        {/* ------------------------------------INVITE FRIENDS---------------------------------------------------------------------- */}
-        {room.accessControl === "public" && (
-          <button
-            // onClick={() => navigate("/users")}
-            onClick={() => navigate(`/users?roomId=${room._id}`)}
-            className="text-xs text-teal-600 font-medium mt-2 hover:text-teal-700 cursor-pointer"
-          >
-            Invite friends
-          </button>
-        )}
-
-        {/* ------------------------------------INVITE FRIENDS---------------------------------------------------------------------- */}
+          {room.accessControl === "public" && (
+            <button
+              // onClick={() => navigate("/users")}
+              onClick={() => navigate(`/users?roomId=${room._id}`)}
+              className="text-xs text-teal-600 font-medium mt-2 hover:text-teal-700 cursor-pointer"
+            >
+              Invite friends
+            </button>
+          )}
         </div>
-
       </div>
 
       {/* Dropdown*/}
@@ -81,29 +76,6 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
           className="absolute top-2 right-2 w-40 bg-white rounded-2xl shadow-2xl border border-gray-200 ring-4 ring-white z-[9999]"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3"
-            onClick={() => {
-              alert("Rename clicked");
-              onMenuToggle(null);
-            }}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
-            Rename
-          </button>
-
           <button
             className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 rounded-b-2xl"
             onClick={() => {
