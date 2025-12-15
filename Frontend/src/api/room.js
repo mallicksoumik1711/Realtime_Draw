@@ -33,3 +33,15 @@ export const getRoomById = async (roomId, token) => {
 
   return res.data;
 };
+
+export const deleteRoom = async (roomId, token) => {
+  return axios.delete(
+    `http://localhost:5000/api/drawroom/${roomId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+

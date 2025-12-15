@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { showToast } from "../store/toastSlice";
+import { deleteRoom } from "../api/room";
+import { useState } from "react";
 
 export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   return (
     <div
@@ -78,9 +85,42 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
         >
           <button
             className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 rounded-b-2xl"
-            onClick={() => {
-              if (confirm("Delete this drawing?"))
-                console.log("Deleted", room._id);
+            onClick={async () => {
+              if (confirmDelete !== room._id) {
+                setConfirmDelete(room._id);
+
+                dispatch(
+                  showToast({
+                    type: "warning",
+                    message: "Click delete again to confirm",
+                  })
+                );
+
+                // auto reset confirmation
+                setTimeout(() => setConfirmDelete(null), 2500);
+                return;
+              }
+
+              try {
+                await deleteRoom(room._id, token);
+
+                dispatch(
+                  showToast({
+                    type: "success",
+                    message: "Room deleted",
+                  })
+                );
+              } catch (err) {
+                dispatch(
+                  showToast({
+                    type: "error",
+                    message: "Failed to delete room",
+                  })
+                );
+                console.error("Delete room error:", err);
+              }
+
+              setConfirmDelete(null);
               onMenuToggle(null);
             }}
           >
@@ -97,7 +137,7 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               />
             </svg>
-            Delete
+            {confirmDelete === room._id ? "Confirm Delete" : "Delete"}
           </button>
         </div>
       )}
