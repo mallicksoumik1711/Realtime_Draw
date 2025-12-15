@@ -21,7 +21,8 @@ const EVENTS = {
 export const initChatSocket = (userId, token) => {
   if (chatSocket?.connected) return chatSocket;
 
-  const baseUrl = import.meta.env.VITE_SOCKET_URL;
+  // const baseUrl = import.meta.env.VITE_SOCKET_URL;
+  const baseUrl = `https://realtime-draw-koya.onrender.com`
   if (!baseUrl) {
     console.warn("VITE_SOCKET_URL is not set. Skipping chat socket init.");
     return undefined;
