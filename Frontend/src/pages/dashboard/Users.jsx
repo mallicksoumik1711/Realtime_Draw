@@ -23,7 +23,7 @@ export default function Users() {
   const location = useLocation();
   const roomId = new URLSearchParams(location.search).get("roomId");
 
-  console.log("INVITING FOR ROOM:", roomId);
+  // console.log("INVITING FOR ROOM:", roomId);
 
   const filteredUsers =
     filter === "active"
@@ -35,7 +35,7 @@ export default function Users() {
   const sendInvite = async (toUserId, roomId) => {
     try {
       const data = await sendInviteAPI(toUserId, roomId);
-      console.log("Invite result:", data);
+      // console.log("Invite result:", data);
       setInvitedUsers((prev) => [...new Set([...prev, toUserId])]); // avoid duplicates
       dispatch(showToast({ message: "Invite sent", type: "success" }));
     } catch (err) {

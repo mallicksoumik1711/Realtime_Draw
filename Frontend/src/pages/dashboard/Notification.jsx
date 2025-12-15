@@ -23,7 +23,6 @@ export default function Notification() {
         const list = await getMyNotificationsAPI();
         dispatch(setNotifications(list));
       } catch (e) {
-        // silently ignore for now, no console noise
         console.log(e);
       }
     })();

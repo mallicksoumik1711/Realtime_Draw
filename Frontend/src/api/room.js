@@ -10,7 +10,7 @@ export const createRoom = async (roomData, token) => {
       },
     }
   );
-  console.log("API RESPONSE:", res.data);
+  // console.log("API RESPONSE:", res.data);
   return res.data;
 };
 

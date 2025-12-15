@@ -26,7 +26,7 @@ export const connectUserSocket = (userId) => {
 
   socket.on("connect", () => {
     // eslint-disable-next-line no-console
-    console.log("socket connected", socket.id, "for user", uid);
+    // console.log("socket connected", socket.id, "for user", uid);
     // Rejoin any rooms tracked locally (e.g., draw rooms)
     joinedRooms.forEach((roomId) => {
       try { socket.emit("join_room", String(roomId)); } catch {

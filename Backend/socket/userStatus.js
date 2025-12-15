@@ -17,19 +17,19 @@ module.exports = (io) => {
       socket.join(String(userId));
       io.emit("user_online", String(userId));
       io.emit("online_users", Array.from(onlineUsers));
-      console.log("User active:", userId);
+      // console.log("User active:", userId);
     } catch (e) {
       console.error("Failed to mark active:", userId, e.message);
     }
 
     socket.on("join_room", (roomId) => {
       socket.join(`room:${roomId}`);
-      console.log("joined draw room:", roomId);
+      // console.log("joined draw room:", roomId);
     });
 
     socket.on("leave_room", (roomId) => {
       socket.leave(`room:${roomId}`);
-      console.log("left draw room:", roomId);
+      // console.log("left draw room:", roomId);
     });
 
     socket.on("draw", ({ roomId, data }) => {
@@ -42,7 +42,7 @@ module.exports = (io) => {
         onlineUsers.delete(String(userId));
         io.emit("user_offline", String(userId));
         io.emit("online_users", Array.from(onlineUsers));
-        console.log("User inactive:", userId);
+        // console.log("User inactive:", userId);
       } catch (e) {
         console.error("Failed to mark inactive:", userId, e.message);
       }
@@ -52,13 +52,13 @@ module.exports = (io) => {
     socket.on("join_room", (roomId) => {
       if (!roomId) return;
       socket.join(String(roomId));
-      console.log(`Socket ${socket.id} joined room ${roomId}`);
+      // console.log(`Socket ${socket.id} joined room ${roomId}`);
     });
 
     socket.on("leave_room", (roomId) => {
       if (!roomId) return;
       socket.leave(String(roomId));
-      console.log(`Socket ${socket.id} left room ${roomId}`);
+      // console.log(`Socket ${socket.id} left room ${roomId}`);
     });
 
     socket.on("draw", ({ roomId, data }) => {
@@ -74,13 +74,13 @@ module.exports = (io) => {
     socket.on("chat:conversation:join", ({ conversationId }) => {
       if (!conversationId) return;
       socket.join(String(conversationId));
-      console.log(`Chat: ${socket.id} joined conversation ${conversationId}`);
+      // console.log(`Chat: ${socket.id} joined conversation ${conversationId}`);
     });
 
     socket.on("chat:conversation:leave", ({ conversationId }) => {
       if (!conversationId) return;
       socket.leave(String(conversationId));
-      console.log(`Chat: ${socket.id} left conversation ${conversationId}`);
+      // console.log(`Chat: ${socket.id} left conversation ${conversationId}`);
     });
 
     socket.on(

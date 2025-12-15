@@ -15,10 +15,10 @@ function Dashboard() {
 
       const data = await createRoom(roomData, token);
 
-      console.log("API RESPONSE:", data);
+      // console.log("API RESPONSE:", data);
 
       if (!data || !data.room || !data.room._id) {
-        console.log("Room ID missing:", data?.room?._id);
+        // console.log("Room ID missing:", data?.room?._id);
         return null;
       }
 
