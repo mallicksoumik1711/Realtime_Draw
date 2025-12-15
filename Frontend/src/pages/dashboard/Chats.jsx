@@ -40,7 +40,7 @@ function Chats() {
   // Load existing conversations to build user->conversation map
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const base = import.meta.env.VITE_API_URL || "https://realtime-draw-koya.onrender.com/api";
     if (!token) return;
     axios
       .get(`${base}/conversations`, {
@@ -93,7 +93,7 @@ function Chats() {
     // Load history for this 1:1 conversation if Conversation model exists
     // Assume a conversation endpoint to ensure a conversation between two users
     const token = localStorage.getItem("token");
-    const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const base = import.meta.env.VITE_API_URL || "https://realtime-draw-koya.onrender.com/api";
     // Find or create conversation for the pair
     const myId = getLoggedInUserId();
     axios
@@ -324,7 +324,7 @@ function Chats() {
                       onClick={async () => {
                         if (!activeConversationId) return;
                         try {
-                          const base = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                          const base = import.meta.env.VITE_API_URL || "https://realtime-draw-koya.onrender.com/api";
                           const token = localStorage.getItem("token");
                           await axios.delete(`${base}/messages/conversation/${activeConversationId}`, {
                             headers: { Authorization: `Bearer ${token}` },

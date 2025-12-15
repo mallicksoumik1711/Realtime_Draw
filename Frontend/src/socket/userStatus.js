@@ -16,7 +16,7 @@ export const connectUserSocket = (userId) => {
     return socket;
   }
   const uid = String(userId || "");
-  socket = io("http://localhost:5000", {
+  socket = io("https://realtime-draw-koya.onrender.com", {
     auth: { userId: uid },
     transports: ["websocket", "polling"],
     reconnection: true,

@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const createRoom = async (roomData, token) => {
   const res = await axios.post(
-    "http://localhost:5000/api/drawroom/create",
+    "https://realtime-draw-koya.onrender.com/api/drawroom/create",
     roomData,
     {
       headers: {
@@ -15,7 +15,7 @@ export const createRoom = async (roomData, token) => {
 };
 
 export const getMyRooms = async (token) => {
-  const res = await axios.get("http://localhost:5000/api/drawroom/myrooms", {
+  const res = await axios.get("https://realtime-draw-koya.onrender.com/api/drawroom/myrooms", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -25,7 +25,7 @@ export const getMyRooms = async (token) => {
 };
 
 export const getRoomById = async (roomId, token) => {
-  const res = await axios.get(`http://localhost:5000/api/drawroom/${roomId}`, {
+  const res = await axios.get(`https://realtime-draw-koya.onrender.com/api/drawroom/${roomId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -36,7 +36,7 @@ export const getRoomById = async (roomId, token) => {
 
 export const deleteRoom = async (roomId, token) => {
   return axios.delete(
-    `http://localhost:5000/api/drawroom/${roomId}`,
+    `https://realtime-draw-koya.onrender.com/api/drawroom/${roomId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

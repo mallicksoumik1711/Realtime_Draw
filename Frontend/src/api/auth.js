@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",   // vercel backend url TODO
+  baseURL: "https://realtime-draw-koya.onrender.com/api",   // vercel backend url TODO
 });
 
 // -------------------- AUTH APIs --------------------
