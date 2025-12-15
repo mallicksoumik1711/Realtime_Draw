@@ -4,7 +4,7 @@ import { showToast } from "../store/toastSlice";
 import { deleteRoom } from "../api/room";
 import { useState } from "react";
 
-export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
+export default function RoomCard({ room, isMenuOpen, onMenuToggle, onRoomDeleted }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const token = localStorage.getItem("token");
@@ -103,7 +103,7 @@ export default function RoomCard({ room, isMenuOpen, onMenuToggle }) {
 
               try {
                 await deleteRoom(room._id, token);
-
+                onRoomDeleted(room._id);
                 dispatch(
                   showToast({
                     type: "success",

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { getMyRooms } from "../../api/room";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +6,10 @@ import RoomCard from "../../components/RoomCard";
 export default function Recent() {
   const [rooms, setRooms] = useState([]);
   const [openMenu, setOpenMenu] = useState(null);
+  const handleRoomDeleted = (roomId) => {
+    setRooms((prev) => prev.filter((r) => r._id !== roomId));
+  };
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,8 +37,18 @@ export default function Recent() {
             <div className="col-span-full text-center py-20">
               <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/40 inline-block px-12 py-10">
                 <div className="w-16 h-16 bg-indigo-100 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                  <svg className="w-9 h-9 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <svg
+                    className="w-9 h-9 text-indigo-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
                   </svg>
                 </div>
                 <p className="text-gray-600 font-medium">No drawings yet</p>
@@ -48,6 +61,7 @@ export default function Recent() {
                 room={room}
                 isMenuOpen={openMenu === room._id}
                 onMenuToggle={(id) => setOpenMenu(openMenu === id ? null : id)}
+                onRoomDeleted={handleRoomDeleted} 
               />
             ))
           )}
