@@ -48,7 +48,7 @@ module.exports = (io) => {
       }
     });
 
-    // --- Draw Room realtime events ---
+    // Draw Room realtime events
     socket.on("join_room", (roomId) => {
       if (!roomId) return;
       socket.join(String(roomId));
