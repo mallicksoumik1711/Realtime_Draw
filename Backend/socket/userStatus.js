@@ -67,7 +67,7 @@ module.exports = (io) => {
       socket.to(String(roomId)).emit("draw", data);
     });
 
-    // --- Chat realtime events with persistence ---
+    // Chat realtime events with persistence
     const Conversation = require("../models/Conversation");
     const Message = require("../models/Message");
 
